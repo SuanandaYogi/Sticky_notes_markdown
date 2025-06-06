@@ -329,14 +329,6 @@ class NoteManager(Gtk.Window):
         GLib.idle_add(self.load_notes)
     
     def on_delete_event(self, widget, event):
-        # Save dimensions of all open notes before hiding
-        for window in windows:
-            if isinstance(window, StickyNote):
-                window.save_window_dimensions()
-        # If we have system tray, hide instead of destroying
-        if tray_icon:
-            self.hide()
-            return True  # Prevent destruction
         return False  # Allow destruction
     
     def on_manager_destroy(self, widget):
@@ -757,7 +749,6 @@ class StickyNote(Gtk.Window):
     def on_note_destroy(self, widget):
         if self.timeout_id is not None:
             GLib.source_remove(self.timeout_id)
-        self.save_window_dimensions()  # Save dimensions when closing
         on_window_destroy(widget)
     
     def setup_ui(self):
@@ -861,11 +852,7 @@ class StickyNote(Gtk.Window):
     
     def on_close_menu(self, widget):
         """Handle close menu item click"""
-        self.save_window_dimensions()
-        if tray_icon:
-            self.hide()
-        else:
-            self.destroy()
+        self.destroy()
     
     def on_key_press(self, widget, event):
         """Handle keyboard shortcuts for zoom"""
@@ -1153,11 +1140,6 @@ class StickyNote(Gtk.Window):
     def on_close(self, window, event):
         self.save_content()
         self.save_zoom_level()
-        self.save_window_dimensions()
-        # Hide instead of destroying if we have tray icon
-        # if tray_icon:
-        #     self.hide()
-        #     return True  # Prevent destruction
         return False  # Allow destruction
     
     def confirm_delete(self, widget):
